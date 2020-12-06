@@ -1,5 +1,8 @@
+import java.util.Arrays;
+
 public class Sort {
     private int counter;
+    private int[] arr;
 
     public Sort() {
     }
@@ -9,13 +12,17 @@ public class Sort {
     // каждый раз.(левая часть сортируется)
     //Сравнивается с каждым предыдущим элементом.
 
+    public static void swap(int[] array, int i, int j) {
+        int temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+
     //Сортировка вставками хороша для маленьких массивов
     public int[] insertionSortArray(int[] array) {
         counter = 0;
         int[] arr = new int[array.length];
-        for (int i = 0; i < arr.length; i++) {
-            arr[i] = array[i];
-        }
+        System.arraycopy(array, 0, arr, 0, arr.length);
         if (arr.length == 1) return arr;
 
         for (int i = 1; i < arr.length; i++) {
@@ -35,9 +42,7 @@ public class Sort {
         if (array.length == 1) return array;
         counter = 0;
         int[] arr = new int[array.length];
-        for (int i = 0; i < arr.length; i++) {
-            arr[i] = array[i];
-        }
+        System.arraycopy(array, 0, arr, 0, arr.length);
 
         for (int i = 1; i < arr.length; i++) {
             int left = 0;
@@ -83,6 +88,7 @@ public class Sort {
                     int temp = a[i - 1];
                     a[i - 1] = a[i];
                     a[i] = temp;
+
                 }
             }
             if (!isReplacement) {
@@ -118,47 +124,171 @@ public class Sort {
 
     При использовании таких приращений среднее количество операций: O(n^7/6),
     в худшем случае - порядка O(n^4/3).
+    луд - O(n log2 n)
     Автор приращения Р.Седжвик.
      */
     public int[] shellSort(int[] arr) {
         counter = 0;
         int[] a = newArray(arr);
 
-        int inc, i, j, s, seq[] = new int[40];
+        int inc;
+        int i;
+        int j;
+        int s;
+        int[] seq = new int[40];
         s = increment(seq, a.length);
         while (s >= 0) {
             inc = seq[s--];
 
             for (i = inc; i < a.length; i++) {
                 int temp = a[i];
+                counter++;
                 for (j = i - inc; (j >= 0) && (a[j] > temp); j -= inc) {
                     a[j + inc] = a[j];
+                    if (j == i - inc) counter--;
                     counter++;
                 }
                 a[j + inc] = temp;
             }
         }
-        /*
+
+
+
+        /*int counter1 = 0;
         for (int step = a.length / 2; step > 0; step /= 2) {
             for (int i = step; i < a.length ; i++) {
+            counter1++;
                 for (int j = i - step; j >= 0 && a[j] > a[j + step] ; j -= step) {
+                    if (j==i-step)counter1--;
                     int x = a[j];
                     a[j] = a[j + step];
                     a[j + step] = x;
-                    counter++;
+                    counter1++;
                 }
             }
         }
+        counter=counter1;
+*/
 
-         */
         return a;
     }
 
+    public int[] hellsort(int[] array1) {
+        counter = 0;
+        int[] array = newArray(array1);
+        int h = 1;
+        while (h * 3 < array.length)
+            h = h * 3 + 1;
+
+        while (h >= 1) {
+            hSort(array, h);
+            h = h / 3;
+        }
+        return array;
+    }
+
+    private void hSort(int[] array, int h) {
+        int length = array.length;
+        for (int i = h; i < length; i++) {
+            for (int j = i; j >= h; j = j - h) {
+                counter++;
+                if (array[j] < array[j - h])
+                    swap(array, j, j - h);
+                else
+                    break;
+            }
+        }
+    }
+
+    public void swap(int i, int j) {
+        //if (i <= arr.length && j >= 0) {
+        int temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+        //}
+    }
+
+    public int[] quickSort(int[] array) {
+        counter = 0;
+        arr = newArray(array);
+
+            recursionQuickSort2(0, arr.length - 1);
+        return arr;
+    }
+
+    private void recursionQuickSort2(int start, int end) {
+        int right = end, left = start;
+        int pivot = arr[left];//опорный element
+
+        while (left <= right) {
+            while (arr[left] < pivot) {
+                left++;
+                counter += 1;
+            }
+            while (arr[right] > pivot) {
+                right--;
+                counter += 1;
+            }
+
+            if (left <= right) {
+                //counter += 1;
+                swap(left++, right--);
+            }
+        }
+
+        if (start < right)
+            recursionQuickSort2(start, right);
+        if (end > left)
+            recursionQuickSort2(left, end);
+    }
+
+
+    public int[] mergeSort(int[] array) {
+        counter = 0;
+        int[] a = new int[array.length];
+        System.arraycopy(array, 0, a, 0, array.length);
+        mergeSort(a, 0, a.length-1);
+
+        return a;
+    }
+
+
+    private void mergeSort(int[] a, int lo, int hi) {
+
+        if (hi <= lo)
+            return;
+        int mid = lo + (hi - lo) / 2;
+        mergeSort(a, lo, mid);
+        mergeSort(a, mid + 1, hi);
+
+        int[] buf = Arrays.copyOf(a, a.length);
+        if (hi + 1 - lo >= 0)
+            System.arraycopy(a, lo, buf, lo, hi + 1 - lo);
+
+        int i = lo, j = mid + 1;
+        for (int k = lo; k <= hi; k++) {
+            counter++;
+            if (i > mid) {
+                a[k] = buf[j];
+                j++;
+            } else if (j > hi) {
+                a[k] = buf[i];
+                i++;
+            } else if (buf[j] < buf[i]) {
+                a[k] = buf[j];
+                j++;
+            } else {
+                a[k] = buf[i];
+                i++;
+            }
+        }
+    }
+
+
+
     private int[] newArray(int[] array) {
         int[] arr = new int[array.length];
-        for (int i = 0; i < arr.length; i++) {
-            arr[i] = array[i];
-        }
+        System.arraycopy(array, 0, arr, 0, arr.length);
         return arr;
     }
 
